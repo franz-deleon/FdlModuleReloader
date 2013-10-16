@@ -6,66 +6,59 @@ use Zend\Filter\Word\UnderscoreToCamelCase;
 class ModuleReloaderManager
 {
     /**
-     * @var FdlModuleReloader\ModuleReloaderManager
-     */
-    protected static $instance;
-
-    /**
      * Reload module list
      * @var array
      */
-    protected static $modules = array();
-
-    /**
-     * Implementation of singleton pattern.
-     * We are implementing singleton since this
-     * class cannot be called from the service locator.
-     *
-     * @param void
-     */
-    protected function __construct()
-    {
-    }
-
-    /**
-     * Retrieve the instance
-     * @param void
-     * @return FdlModuleReloader\ModuleReloaderManager
-     */
-    public static function getInstance()
-    {
-        if (null === static::$instance) {
-            static::$instance = new self();
-        }
-        return static::$instance;
-    }
+    protected $modules = array();
 
     /**
      * Add a module to the reload list
-     * @param string $module
+     *
+     * Usage:
+     *     add(array(
+     *         array(
+     *             'name' => 'ModuleName',
+     *             'callback' => function ($moduleInstance, $serviceManager) {
+     *                 // return boolean;
+     *             },
+     *         )
+     *     ));
+     *     // or
+     *     add('ModuleName');
+     *
+     * @param mixed $module
      */
     public function add($module)
     {
-        if (!is_string($module)) {
-            throw new Exception\InvalidArgumentException("Invalid type, only accepts string");
+        if (!is_string($module) && !is_array($module)) {
+            throw new Exception\InvalidArgumentException("Invalid type, only accepts string or arrays");
         }
 
-        static::$modules[$this->normalizedIndex($module)] = $module;
+        if (is_array($module)) {
+            $index = $this->normalizedIndex($module['name']);
+            $this->modules[$index]['name'] = $module['name'];
+            if (isset($module['callback']) && is_callable($module['callback'])) {
+                $this->modules[$index]['callback'] = $module['callback'];
+            }
+        } else {
+            $index = $this->normalizedIndex($module);
+            $this->modules[$index]['name'] = $module;
+        }
     }
 
     /**
-     * Delete a module from the reload list
+     * Remove a module from the reload list
      * @param string $module
      */
-    public function delete($module)
+    public function remove($module)
     {
         if (!is_string($module)) {
             throw new Exception\InvalidArgumentException("Invalid type, only accepts string");
         }
 
-        $index  = $this->normalizedIndex($module);
-        if (isset(static::$modules[$index])) {
-            unset(static::$modules[$index]);
+        $index = $this->normalizedIndex($module);
+        if (isset($this->modules[$index])) {
+            unset($this->modules[$index]);
         }
     }
 
@@ -81,9 +74,9 @@ class ModuleReloaderManager
             throw new Exception\InvalidArgumentException("Invalid type, only accepts string");
         }
 
-        $index  = $this->normalizedIndex($module);
-        if (isset(static::$modules[$index])) {
-            return static::$modules[$index];
+        $index = $this->normalizedIndex($module);
+        if (isset($this->modules[$index])) {
+            return $this->modules[$index];
         }
     }
 
@@ -94,7 +87,7 @@ class ModuleReloaderManager
      */
     public function getModules()
     {
-        return static::$modules;
+        return $this->modules;
     }
 
     /**
