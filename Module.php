@@ -9,7 +9,11 @@ class Module
      */
     public function init($moduleManager)
     {
-        $moduleManager->getEventManager()->attach(new ModuleReloaderListener());
+        $moduleReloaderListener = new ModuleReloaderListener(
+            new ModuleReloaderManager(),
+            $this->getConfig()
+        );
+        $moduleManager->getEventManager()->attach($moduleReloaderListener);
     }
 
     public function getConfig()

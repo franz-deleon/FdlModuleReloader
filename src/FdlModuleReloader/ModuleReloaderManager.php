@@ -15,9 +15,10 @@ class ModuleReloaderManager
      * Add a module to the reload list
      *
      * Usage:
+     * <code>
      *     add(array(
      *         array(
-     *             'name' => 'ModuleName',
+     *             'name' => 'ModuleName|*|ModuleName1,ModuleName2',
      *             'callback' => function ($moduleInstance, $serviceManager) {
      *                 // return boolean;
      *             },
@@ -25,6 +26,7 @@ class ModuleReloaderManager
      *     ));
      *     // or
      *     add('ModuleName');
+     * </code>
      *
      * @param mixed $module
      */
@@ -35,15 +37,38 @@ class ModuleReloaderManager
         }
 
         if (is_array($module)) {
-            $index = $this->normalizedIndex($module['name']);
-            $this->modules[$index]['name'] = $module['name'];
-            if (isset($module['callback']) && is_callable($module['callback'])) {
-                $this->modules[$index]['callback'] = $module['callback'];
+            $moduleNames = explode(',', $module['name']);
+            foreach ($moduleNames as $moduleName) {
+                $moduleName = trim($moduleName);
+                $index = $this->normalizedIndex($moduleName);
+                $this->modules[$index]['name'] = $moduleName;
+                if (isset($module['callback']) && is_callable($module['callback'])) {
+                    $this->modules[$index]['callback'] = $module['callback'];
+                }
             }
         } else {
             $index = $this->normalizedIndex($module);
             $this->modules[$index]['name'] = $module;
         }
+    }
+
+    /**
+     * Does the module exists in the list?
+     * @param string $module
+     */
+    public function exists($module)
+    {
+        $index = $this->normalizedIndex($module);
+        if (isset($this->modules[$index])) {
+            return true;
+        } else {
+            while (list($index) = each($this->modules)) {
+                if (substr($index, 0, 3) === 'all') {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -68,7 +93,7 @@ class ModuleReloaderManager
      * @return mixed
      * @throws Exception\InvalidArgumentException
      */
-    public function getModule($module)
+    public function get($module)
     {
         if (!is_string($module)) {
             throw new Exception\InvalidArgumentException("Invalid type, only accepts string");
@@ -85,7 +110,7 @@ class ModuleReloaderManager
      * @param void
      * @return array
      */
-    public function getModules()
+    public function getAll()
     {
         return $this->modules;
     }
@@ -96,7 +121,11 @@ class ModuleReloaderManager
      */
     protected function normalizedIndex($index)
     {
-        $filter = new UnderscoreToCamelCase();
-        return $filter->filter($index);
+        if ($index === '*') {
+            return uniqid('all-');
+        } else {
+            $filter = new UnderscoreToCamelCase();
+            return $filter->filter($index);
+        }
     }
 }
