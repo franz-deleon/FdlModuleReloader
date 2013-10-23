@@ -1,5 +1,5 @@
 {
-    "name": "franz-deleon/fdlmodulereloader",
+    "name": "franz-deleon/fdl-module-reloader",
     "type": "library",
     "description": "A ZF2 module that gives the ability to reload modules",
     "keywords": [
@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-0": {
-            "FdlModuleReloader": "src"
+            "FdlModuleReloader\\": "src/"
         },
         "classmap": [
             "Module.php"
