@@ -3,6 +3,7 @@ namespace FdlModuleReloader;
 
 use Zend\EventManager;
 use Zend\ModuleManager\ModuleEvent;
+use Zend\Soap\call_user_func;
 
 class ModuleReloaderListener implements EventManager\ListenerAggregateInterface
 {
@@ -63,9 +64,8 @@ class ModuleReloaderListener implements EventManager\ListenerAggregateInterface
         $serviceManager = $moduleManager->getEvent()->getParam('ServiceManager');
         $moduleReloaderManager = $serviceManager->get('moduleReloaderManager');
 
-            $config = $serviceManager->get('config');//var_dump($serviceManager->getCanonicalNames());
+        $config = $serviceManager->get('config');
         foreach ($config['module_reloader'] as $module) {
-            //$this->moduleReloaderManager->add($module);
             $moduleReloaderManager->add($module);
         }
     }
@@ -75,7 +75,7 @@ class ModuleReloaderListener implements EventManager\ListenerAggregateInterface
      * @param ModuleEvent $e
      */
     public function reloadModules(ModuleEvent $e)
-    {print 2;
+    {
         $moduleManager  = $e->getTarget();
         $loadedModules  = $moduleManager->getLoadedModules();
         $serviceManager = $moduleManager->getEvent()->getParam('ServiceManager');
@@ -86,18 +86,19 @@ class ModuleReloaderListener implements EventManager\ListenerAggregateInterface
                 if ($managerModule['name'] === $loadedModuleName || $managerModule['name'] === '*') {
                     if (isset($managerModule['callback']) && is_callable($managerModule['callback'])) {
                         // call the callback
-                        if ($managerModule['callback']($loadedModule, $serviceManager) != true) {
+                        if (call_user_func($managerModule['callback'], $loadedModule, $serviceManager) != true) {
                             continue;
                         }
                     }
 
+                    /*
                     // reload the module
-                   // $e = clone $e;
                     $moduleManager->getEventManager()->trigger(
                         ModuleEvent::EVENT_LOAD_MODULE,
                         $moduleManager,
                         $e->setModuleName($loadedModuleName)->setModule($loadedModule)
                     );
+                    */
 
                     continue;
                 }
