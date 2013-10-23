@@ -23,6 +23,9 @@
     "autoload": {
         "psr-0": {
             "FdlModuleReloader\\": "src/"
-        }
+        },
+        "classmap": [
+            "./Module.php"
+        ]
     }
 }
