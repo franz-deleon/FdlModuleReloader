@@ -16,7 +16,6 @@
             "email": "franz_dl@yahoo.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.3",
         "zendframework/zendframework": ">=2.2.0"
