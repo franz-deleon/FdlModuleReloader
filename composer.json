@@ -1,7 +1,7 @@
 {
     "name": "franz-deleon/fdl-module-reloader",
     "type": "library",
-    "description": "A ZF2 module that gives the ability to reload modules",
+    "description": "A ZF2 module that to reload modules",
     "keywords": [
         "Module Reloader",
         "zf2 module reloading",
